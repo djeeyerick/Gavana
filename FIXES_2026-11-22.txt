@@ -1,0 +1,14 @@
+GAVANA FILMS V4 TMDB INTEGRATED - PATCH NOTES
+
+1. TMDB metadata is optional. If TMDB has no matching record or the metadata endpoint is unavailable, the public page hides the empty metadata area instead of displaying system/admin error text.
+2. After a visitor comment is saved, the visitor sees: "Comment yawe yakiriwe. Murakoze!" Email-notification setup is not exposed to visitors.
+3. Admin login now validates the current Supabase user session, retains normal session persistence/refresh, keeps the admin_users membership check, and presents a clearer login/authorization failure without exposing backend details. Access remains restricted to users listed in public.admin_users.
+
+IMPORTANT:
+- No service_role key was added.
+- Existing Supabase tables, RLS policies, movie/series features, comment manager, cast, categories, episodes and parts remain in the project.
+- If an account can authenticate but is not present in public.admin_users, it will still be denied Admin access by design. Do not disable RLS or make all authenticated users admins.
+
+
+ADMIN LOGIN DIAGNOSTICS
+The login handler now displays the actual Supabase Auth or admin_users error (including code/status when available) instead of hiding it behind a generic message. Admin membership remains mandatory; no RLS bypass or elevated key was added.

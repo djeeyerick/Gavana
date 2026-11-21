@@ -15,7 +15,7 @@ main{max-width:1180px;margin:24px auto;padding:18px}.card{padding:clamp(18px,3vw
 h1{color:#e0bd59;margin-bottom:8px}.meta{color:#bbb;line-height:1.8}
 .btn{display:block;text-align:center;text-decoration:none;padding:14px;margin-top:13px;border-radius:8px;font-weight:bold;background:#d71920;color:#fff;border:1px solid #ff4b50}.btn.secondary{background:#222;color:#f4d778;border:1px solid #987b32}
 .secondary{background:#222;color:#f4d778;border:1px solid #987b32}.download-choice{cursor:pointer}.download-choice.no-link{opacity:.65;border-style:dashed}
-h3{color:#d8b34e;margin-top:28px}.extra-info{display:grid;gap:6px;margin-top:10px}.extra-info strong{color:#f0d16e}#msg{line-height:1.5;overflow-wrap:anywhere}
+h3{color:#d8b34e;margin-top:28px}.extra-info{display:grid;gap:6px;margin-top:10px}.extra-info strong{color:#f0d16e}.tmdb-tagline{color:#f0d16e;font-style:italic;font-size:16px}.tmdb-credit{font-size:11px;color:#777;margin-top:14px}#msg{line-height:1.5;overflow-wrap:anywhere}
 footer{text-align:center;color:#999;padding:25px}.episode-list{display:grid;gap:12px;margin-top:12px}.episode-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:13px;background:#0c0c0c;border:1px solid #554723;border-radius:9px}.episode-title{color:#f0d16e;font-weight:bold}.episode-sub{font-size:12px;color:#aaa;margin-top:5px}.episode-btn{display:inline-block;text-decoration:none;text-align:center;padding:10px 12px;border-radius:7px;background:#d71920;color:#fff;border:1px solid #ff4b50;font-weight:bold;font-size:12px}.episode-btn.watch{background:#222;color:#f4d778;border:1px solid #987b32}@media(max-width:460px){.episode-row{grid-template-columns:1fr 1fr}.episode-info{grid-column:1/-1}.episode-btn{padding:10px 5px}}.recommended-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.rec-card{background:#0c0c0c;border:1px solid #4d4225;border-radius:9px;padding:9px;min-width:0}.rec-card img{width:100%;height:120px;object-fit:cover;border-radius:6px;background:#222}.rec-card strong{display:block;margin:7px 0;color:#f0d16e;font-size:13px}.rec-card small{color:#bbb}.rec-card a{display:block;text-align:center;padding:8px;margin-top:8px;background:#d8b34e;color:#111;border-radius:6px;font-weight:bold;font-size:12px}@media(min-width:900px){.recommended-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.poster{max-height:520px}}@media(max-width:700px){main{padding:12px;margin:12px auto}.card{padding:16px}}@media(max-width:460px){.recommended-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .site-brand{display:inline-flex;align-items:center;justify-content:center;gap:10px;color:#d9b650;text-decoration:none;font-weight:900;letter-spacing:2px;font-size:22px}
@@ -56,7 +56,7 @@ footer{text-align:center;color:#999;padding:25px}.episode-list{display:grid;gap:
 <div id="moviePartsSection"><h3>MOVIE PARTS</h3><div id="partsList" class="episode-list"></div><p id="partsMsg" class="meta" hidden></p></div>
 
 <h3>FILM INFO</h3>
-<p id="about">About movie Loading...</p><div id="extraInfo" class="meta extra-info" hidden></div>
+<p id="about">About movie Loading...</p><p id="tmdbTagline" class="tmdb-tagline" hidden></p><div id="extraInfo" class="meta extra-info" hidden></div><p class="tmdb-credit">Movie information and images provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
 
 <section class="comment-section" id="comments">
  <h3>COMMENTS</h3>
@@ -97,16 +97,24 @@ function setOfficialButton(candidates){
  a.dataset.downloadUrl=url;a.href=url||'#';a.hidden=!url;a.classList.toggle('no-link',!url);a.setAttribute('aria-disabled',url?'false':'true');
  a.onclick=function(e){const target=cleanUrl(this.dataset.downloadUrl||'');if(!target){e.preventDefault();alert('Download link ntiboneka ubu.');return;}this.href=target;};
 }
-function renderExtraInfo(data){const box=document.getElementById('extraInfo');if(!box)return;const fields=[['Cast',data.cast||data.casts||data.actors],['Director',data.director],['Rating',data.rating||data.vote_average],['Runtime',data.runtime],['Language',data.original_language]];const lines=fields.filter(([k,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').map(([k,v])=>`<div><strong>${k}:</strong> ${safeText(Array.isArray(v)?v.join(', '):v)}</div>`);box.innerHTML=lines.join('');box.hidden=!lines.length;}
+function renderExtraInfo(data){
+ const box=document.getElementById('extraInfo');if(!box)return;
+ const fields=[['Genres',data.genres],['Release date',data.release_date],['Cast',data.cast||data.casts||data.actors],['Director / Creator',data.director],['TMDB rating',data.rating||data.vote_average],['Votes',data.vote_count],['Runtime',data.runtime],['Original language',data.original_language],['Production',data.production_companies],['Status',data.status],['Seasons',data.number_of_seasons],['Episodes',data.number_of_episodes]];
+ const lines=fields.filter(([k,v])=>v!==null&&v!==undefined&&String(v).trim()!==''&&!(typeof v==='number'&&v===0)).map(([k,v])=>`<div><strong>${k}:</strong> ${safeText(Array.isArray(v)?v.join(', '):v)}</div>`);
+ box.innerHTML=lines.join('');box.hidden=!lines.length;
+}
 async function loadExternalMetadata(data){
  try{
   const type=String(data.type||'movie').toLowerCase()==='series'?'series':'movie';
-  const qs=new URLSearchParams({title:data.title||'',type,year:String(data.release_year||'')});
+  const qs=new URLSearchParams({title:data.title||'',type,year:String(data.release_year||data.year||'')});
   const response=await fetch('/.netlify/functions/movie-metadata?'+qs.toString());
-  if(!response.ok)return;
-  const extra=await response.json();
-  if(extra && !extra.error)renderExtraInfo({...data,...extra});
- }catch(e){console.info('Optional metadata unavailable:',e.message||e);}
+  if(!response.ok)throw new Error('TMDB response '+response.status);
+  const extra=await response.json();if(!extra||extra.error)throw new Error(extra?.error||'No TMDB match');
+  if(extra.overview){document.getElementById('about').textContent=extra.overview;}
+  if(extra.tagline){const tag=document.getElementById('tmdbTagline');tag.textContent='“'+extra.tagline+'”';tag.hidden=false;}
+  if(extra.poster_path){const poster=document.getElementById('poster');if(!data.poster_path){poster.src=extra.poster_path;poster.hidden=false;}}
+  renderExtraInfo({...data,...extra});
+ }catch(e){const box=document.getElementById('extraInfo');if(box){box.innerHTML='';box.hidden=true;}const tag=document.getElementById('tmdbTagline');if(tag){tag.textContent='';tag.hidden=true;}}
 }
 
 async function init(){
@@ -225,7 +233,7 @@ function setupComments(movieId){
     notified=notice.ok;
    }catch(notificationError){console.warn('Email notification unavailable:',notificationError);}
    form.reset();await loadComments(movieId);
-   status.textContent=notified?'Comment posted. Email notification sent.':'Comment posted. Email notification needs configuration by the site administrator.';
+   status.textContent='Comment yawe yakiriwe. Murakoze!';
   }catch(e){console.error('Comment submit:',e);status.textContent='Comment ntiyoherejwe. Ongera ugerageze.';}
   finally{button.disabled=false;button.textContent='POST COMMENT';}
  });
