@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Watch | GAVANA FILMS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:white;font-family:Arial,sans-serif}
+header{text-align:center;padding:20px;color:#d8b34e;font-weight:bold;letter-spacing:2px;border-bottom:1px solid #a88b3b}
+main{max-width:850px;margin:25px auto;padding:16px}
+.card{background:#151515;border:1px solid #a88b3b;border-radius:14px;padding:20px}
+h1{color:#d8b34e}.player{width:100%;aspect-ratio:16/9;background:#000;border-radius:9px;overflow:hidden}
+video,iframe{width:100%;height:100%;border:0}
+p{line-height:1.7;color:#ccc}.btn{display:block;text-align:center;margin-top:15px;padding:14px;background:#d8b34e;color:#111;text-decoration:none;font-weight:bold;border-radius:8px}
+.secondary{background:#222;color:#f2d77d;border:1px solid #a88b3b}
+#msg{overflow-wrap:anywhere}
+
+.site-brand{display:inline-flex;align-items:center;justify-content:center;gap:10px;color:#d9b650;text-decoration:none;font-weight:900;letter-spacing:2px;font-size:22px}
+.site-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:#d8b34e;color:#080808;font-size:24px;font-style:italic;font-weight:900}
+.site-brand small{display:block;font-size:9px;letter-spacing:4px;color:#f0d16e;margin-top:-3px}
+</style>
+</head>
+<body>
+<header><a class="site-brand" href="index.html" aria-label="GAVANA FILMS Home"><span class="site-brand-mark">G</span><span>GAVANA<small>F I L M S</small></span></a></header>
+<main><div class="card">
+<h1 id="title">Loading...</h1>
+<p id="meta"></p>
+<div class="player" id="player"></div>
+<p id="description"></p>
+<p id="msg">Turimo gufungura video...</p>
+<a id="download" class="btn" hidden>⬇ DOWNLOAD MOVIE</a>
+<a class="btn secondary" href="index.html">← BACK TO HOME</a>
+</div></main>
+<script>
+const SUPABASE_URL="https://hiqoqzkbyeewqzrghcfk.supabase.co";
+const SUPABASE_KEY="sb_publishable_QsvvsjjhaVRb0X1TbHU9WQ__bI6LX2a";
+const msg=document.getElementById("msg");
+
+async function init(){
+ try{
+  const id=new URLSearchParams(location.search).get("id");
+  if(!id)throw Error("Nta film ID iri muri link.");
+  let data=null;
+  try {
+   const saved=JSON.parse(sessionStorage.getItem("gavanaWatchMovie")||"null");
+   if(saved && String(saved.id)===String(id)) data={
+    ...saved, release_year:saved.release_year ?? saved.year,
+    video_url:saved.video_url ?? saved.video,
+    description:saved.description ?? saved.desc,
+    download_url:saved.download_url ?? saved.download
+   };
+  } catch(e) {}
+  if(!data){
+   const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+   const {data:row,error}=await db.from("movies").select("*")
+    .eq("id",id).eq("status","published").maybeSingle();
+   if(error)throw error;
+   data=row;
+  }
+  if(!data)throw Error("Filime ntiyabonetse cyangwa ntiratangazwa.");
+
+  document.title=data.title+" | GAVANA FILMS";
+  document.getElementById("title").textContent=data.title;
+  document.getElementById("meta").textContent=
+   [data.type==="series"?"Series":"Movie",data.release_year,data.genre]
+    .filter(Boolean).join(" • ");
+  document.getElementById("description").textContent=data.description||"";
+  
+  if(!data.video_url)throw Error("Video ntiboneka ubu.");
+  const url=data.video_url;
+  const player=document.getElementById("player");
+  const safeURL=/^https?:\/\//i.test(url);
+  if(!safeURL)throw Error("Video URL ntabwo ari URL yemewe.");
+
+  if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(url)){
+   const v=document.createElement("video");
+   v.controls=true;v.playsInline=true;v.preload="metadata";v.src=url;
+   player.appendChild(v);
+  }else if(/youtube\.com|youtu\.be|vimeo\.com/i.test(url)){
+   const note=document.createElement("p");
+   note.style.padding="15px";
+   note.textContent="Kureba video, kanda buto iri munsi. URL ya YouTube/Vimeo ishobora gukenera embed link.";
+   player.appendChild(note);
+   const a=document.createElement("a");
+   a.href=url;a.target="_blank";a.rel="noopener noreferrer";
+   a.className="btn";a.textContent="▶ OPEN VIDEO";
+   player.appendChild(a);
+  }else{
+   const a=document.createElement("a");
+   a.href=url;a.target="_blank";a.rel="noopener noreferrer";
+   a.className="btn";a.textContent="▶ OPEN VIDEO";
+   player.appendChild(a);
+  }
+
+  if(data.download_url && /^https?:\/\//i.test(data.download_url)){
+   const d=document.getElementById("download");
+   d.href=data.download_url;d.target="_blank";d.rel="noopener noreferrer";d.hidden=false;
+  }
+  msg.textContent="Movie loaded successfully.";
+  msg.style.color="#83dc91";
+ }catch(e){
+  msg.textContent=e.message;
+  msg.style.color="#ff7777";
+ }
+}
+init();
+</script>
+</body>
+</html>

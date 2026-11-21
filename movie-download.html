@@ -1,0 +1,246 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Movie & Parts | GAVANA FILMS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:Arial,sans-serif}
+header{padding:20px;text-align:center;border-bottom:1px solid #b99840;color:#d9b650;font-weight:bold;letter-spacing:2px}
+main{max-width:1180px;margin:24px auto;padding:18px}.card{padding:clamp(18px,3vw,34px)}
+.card{background:#151515;border:1px solid #b99840;border-radius:14px;padding:20px}
+.poster{width:100%;max-height:390px;object-fit:contain;background:#090909;border-radius:9px}
+h1{color:#e0bd59;margin-bottom:8px}.meta{color:#bbb;line-height:1.8}
+.btn{display:block;text-align:center;text-decoration:none;padding:14px;margin-top:13px;border-radius:8px;font-weight:bold;background:#d8b34e;color:#111}
+.secondary{background:#222;color:#f4d778;border:1px solid #987b32}.download-choice{cursor:pointer}.download-choice.no-link{opacity:.65;border-style:dashed}
+h3{color:#d8b34e;margin-top:28px}.extra-info{display:grid;gap:6px;margin-top:10px}.extra-info strong{color:#f0d16e}#msg{line-height:1.5;overflow-wrap:anywhere}
+footer{text-align:center;color:#999;padding:25px}.episode-list{display:grid;gap:12px;margin-top:12px}.episode-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:13px;background:#0c0c0c;border:1px solid #554723;border-radius:9px}.episode-title{color:#f0d16e;font-weight:bold}.episode-sub{font-size:12px;color:#aaa;margin-top:5px}.episode-btn{display:inline-block;text-decoration:none;text-align:center;padding:10px 12px;border-radius:7px;background:#d8b34e;color:#111;font-weight:bold;font-size:12px}.episode-btn.watch{background:#222;color:#f4d778;border:1px solid #987b32}@media(max-width:460px){.episode-row{grid-template-columns:1fr 1fr}.episode-info{grid-column:1/-1}.episode-btn{padding:10px 5px}}.recommended-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.rec-card{background:#0c0c0c;border:1px solid #4d4225;border-radius:9px;padding:9px;min-width:0}.rec-card img{width:100%;height:120px;object-fit:cover;border-radius:6px;background:#222}.rec-card strong{display:block;margin:7px 0;color:#f0d16e;font-size:13px}.rec-card small{color:#bbb}.rec-card a{display:block;text-align:center;padding:8px;margin-top:8px;background:#d8b34e;color:#111;border-radius:6px;font-weight:bold;font-size:12px}@media(min-width:900px){.recommended-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.poster{max-height:520px}}@media(max-width:700px){main{padding:12px;margin:12px auto}.card{padding:16px}}@media(max-width:460px){.recommended-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.site-brand{display:inline-flex;align-items:center;justify-content:center;gap:10px;color:#d9b650;text-decoration:none;font-weight:900;letter-spacing:2px;font-size:22px}
+.site-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:#d8b34e;color:#080808;font-size:24px;font-style:italic;font-weight:900}
+.site-brand small{display:block;font-size:9px;letter-spacing:4px;color:#f0d16e;margin-top:-3px}
+
+.comment-section{margin-top:18px;padding:18px;background:#0c0c0c;border:1px solid #554723;border-radius:10px}
+.comment-section h3{margin-top:0}
+.comment-form{display:grid;gap:10px;margin:14px 0 20px}
+.comment-form input,.comment-form textarea{width:100%;padding:12px;border:1px solid #66552b;border-radius:7px;background:#151515;color:#fff;font:inherit}
+.comment-form textarea{min-height:100px;resize:vertical}
+.comment-form button{border:0;border-radius:7px;padding:13px;background:#d8b34e;color:#111;font-weight:bold;cursor:pointer}
+.comment-list{display:grid;gap:10px}
+.comment-item{padding:12px;border:1px solid #3f3621;border-radius:8px;background:#111}
+.comment-item strong{color:#f0d16e}
+.comment-item small{display:block;color:#999;margin-top:3px}
+.comment-item p{white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0 0}
+.comment-status{color:#f0d16e;min-height:1.4em}
+
+@media(min-width:900px){
+ main{max-width:none;width:100%;margin:0;padding:24px 3vw}
+ main>.card{min-height:calc(100vh - 105px);border-radius:12px}
+}
+</style>
+</head>
+<body>
+<header><a class="site-brand" href="index.html" aria-label="GAVANA FILMS Home"><span class="site-brand-mark">G</span><span>GAVANA<small>F I L M S</small></span></a></header>
+<main>
+<div class="card">
+<img id="poster" class="poster" alt="Movie poster" hidden>
+<h1 id="title">Loading movie...</h1>
+<div class="meta" id="meta"></div>
+<p id="description"></p>
+<p id="msg" hidden></p>
+
+<a id="official" class="btn download-choice" href="#" target="_blank" rel="noopener noreferrer" hidden>⬇ OFFICIAL DOWNLOAD</a>
+<a id="watch" class="btn secondary" hidden>▶ WATCH MOVIE</a>
+<div id="moviePartsSection"><h3>MOVIE PARTS</h3><div id="partsList" class="episode-list"></div><p id="partsMsg" class="meta" hidden></p></div>
+
+<h3>FILM INFO</h3>
+<p id="about">About movie Loading...</p><div id="extraInfo" class="meta extra-info" hidden></div>
+
+<section class="comment-section" id="comments">
+ <h3>COMMENTS</h3>
+ <p class="meta">Siga igitekerezo cyawe kuri iyi filime cyangwa series.</p>
+ <form class="comment-form" id="commentForm">
+  <input id="commentName" name="name" type="text" maxlength="80" placeholder="Your name" autocomplete="name" required>
+  <input id="commentEmail" name="email" type="email" maxlength="254" placeholder="Your email address" autocomplete="email" required>
+  <textarea id="commentText" name="comment" maxlength="2000" placeholder="Write your comment..." required></textarea>
+  <button id="commentSubmit" type="submit">POST COMMENT</button>
+ </form>
+ <p class="comment-status" id="commentStatus" role="status" aria-live="polite"></p>
+ <div class="comment-list" id="commentList"><p class="meta">Loading comments...</p></div>
+</section>
+
+
+<h3>CONTACT US</h3>
+<a class="btn secondary" href="https://wa.me/250784520912" target="_blank" rel="noopener noreferrer">WhatsApp: +250784520912</a>
+<a class="btn secondary" href="mailto:gavanafilms@gmail.com">Email GAVANA FILMS</a>
+<button id="share" class="btn secondary">SHARE MOVIE</button>
+<h3>RECOMMENDED MOVIES & SERIES</h3><div id="recommended" class="recommended-grid"></div><p id="recommendedMsg" class="meta" hidden></p>
+<a class="btn secondary" href="index.html">← BACK TO HOME</a>
+</div>
+</main>
+<footer>© GAVANA FILMS</footer>
+<script>
+const SUPABASE_URL="https://hiqoqzkbyeewqzrghcfk.supabase.co";
+const SUPABASE_KEY="sb_publishable_QsvvsjjhaVRb0X1TbHU9WQ__bI6LX2a";
+const msg=document.getElementById("msg");
+function cleanUrl(value){
+ if(typeof value!=="string") return "";
+ const url=value.trim();
+ try { const parsed=new URL(url); return (parsed.protocol==="https:"||parsed.protocol==="http:")?parsed.href:""; }
+ catch(e){ return ""; }
+}
+function setOfficialButton(candidates){
+ const a=document.getElementById('official');
+ const url=cleanUrl(candidates.find(v=>cleanUrl(v))||'');
+ a.dataset.downloadUrl=url;a.href=url||'#';a.hidden=!url;a.classList.toggle('no-link',!url);a.setAttribute('aria-disabled',url?'false':'true');
+ a.onclick=function(e){const target=cleanUrl(this.dataset.downloadUrl||'');if(!target){e.preventDefault();alert('Download link ntiboneka ubu.');return;}this.href=target;};
+}
+function renderExtraInfo(data){const box=document.getElementById('extraInfo');if(!box)return;const fields=[['Cast',data.cast||data.casts||data.actors],['Director',data.director],['Rating',data.rating||data.vote_average],['Runtime',data.runtime],['Language',data.original_language]];const lines=fields.filter(([k,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').map(([k,v])=>`<div><strong>${k}:</strong> ${safeText(Array.isArray(v)?v.join(', '):v)}</div>`);box.innerHTML=lines.join('');box.hidden=!lines.length;}
+async function loadExternalMetadata(data){
+ try{
+  const type=String(data.type||'movie').toLowerCase()==='series'?'series':'movie';
+  const qs=new URLSearchParams({title:data.title||'',type,year:String(data.release_year||'')});
+  const response=await fetch('/.netlify/functions/movie-metadata?'+qs.toString());
+  if(!response.ok)return;
+  const extra=await response.json();
+  if(extra && !extra.error)renderExtraInfo({...data,...extra});
+ }catch(e){console.info('Optional metadata unavailable:',e.message||e);}
+}
+
+async function init(){
+ try{
+  const id=new URLSearchParams(location.search).get("id");
+  if(!id){
+    document.getElementById("title").textContent="Hitamo filime kuri GAVANA FILMS";
+    document.getElementById("msg").textContent="Fungura ahabanza, uhitemo filime, hanyuma ukande Download kugira ngo ubone link zayo.";
+    document.getElementById("msg").style.color="#e0bd59";
+    return;
+  }
+  // Prefer the exact card selected on the homepage; this also supports the site's sample catalog.
+  let data=null;
+  try {
+    const saved=JSON.parse(sessionStorage.getItem("gavanaDownloadMovie")||"null");
+    if(saved && String(saved.id)===String(id)) data={
+      ...saved, release_year:saved.release_year ?? saved.year,
+      poster_path:saved.poster_path ?? saved.poster,
+      description:saved.description ?? saved.desc,
+      video_url:saved.video_url ?? saved.video,
+      download_url:saved.download_url ?? saved.download,
+    };
+  } catch(e) {}
+  if(!data){
+    const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const {data:row,error}=await db.from("movies").select("*")
+      .eq("id",id).maybeSingle();
+    if(error)throw error;
+    data=row;
+  }
+  if(!data)throw Error("Filime ntiyabonetse cyangwa ntiratangazwa.");
+  window.__gavanaCurrentMovie=data;document.title=data.title+" | GAVANA FILMS";
+  try{const viewDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);await viewDb.from('movie_views').insert({movie_id:String(data.id)});}catch(viewError){console.info('View count unavailable:',viewError.message||viewError);}
+  document.getElementById("title").textContent=data.title||"Untitled";
+  document.getElementById("description").textContent=data.description||"";
+  document.getElementById("about").textContent=data.description||"About movie Loading...";renderExtraInfo(data);loadExternalMetadata(data);setupComments(data.id);
+  const isSeries=false;
+  document.getElementById("meta").textContent=
+   [isSeries?"Series":"Movie",data.release_year,data.genre]
+    .filter(Boolean).join(" • ");
+  if(data.poster_path && /^https?:\/\//i.test(data.poster_path)){
+   const p=document.getElementById("poster");
+   p.src=data.poster_path;p.hidden=false;
+  }
+  setOfficialButton([data.download_url,data.official_download_url,data.download,data.officialDownloadUrl]);
+  const partRows=await loadMovieParts(data.id);
+  const hasMultipleParts=partRows.length>1;
+  const hasPartLinks=partRows.some(part=>!!cleanUrl(part.watch_url||'')||!!cleanUrl(part.download_url||''));
+  const showTopButtons=partRows.length===1 && hasPartLinks && !hasMultipleParts;
+  const officialUrl=cleanUrl(data.download_url||data.official_download_url||data.download||data.officialDownloadUrl||'');
+  const movieWatchUrl=cleanUrl(data.video_url||'');
+  document.getElementById('official').hidden=!showTopButtons||!officialUrl;
+  document.getElementById('watch').hidden=!showTopButtons||!movieWatchUrl;
+  await Promise.resolve();
+  if(showTopButtons && !isSeries && movieWatchUrl){
+   const w=document.getElementById("watch");
+   w.href=movieWatchUrl;w.target="_blank";w.rel="noopener noreferrer";w.hidden=false;
+  }
+  const hasDownload = !!cleanUrl(data.download_url||data.official_download_url||data.download||data.officialDownloadUrl||'');
+  msg.hidden=true;
+  await loadRecommended(String(data.id));
+ }catch(e){
+  msg.hidden=true;console.error(e);
+ }
+}
+
+async function loadMovieParts(movieId){
+ const box=document.getElementById('partsList'),note=document.getElementById('partsMsg');
+ try{const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const {data,error}=await db.from('movie_parts').select('*').eq('movie_id',movieId).order('part_number',{ascending:true});if(error)throw error;const rows=data||[];if(!rows.length){box.innerHTML='';note.hidden=true;return rows;}box.innerHTML=rows.map(part=>{const watch=cleanUrl(part.watch_url||''),down=cleanUrl(part.download_url||'');return `<div class="episode-row"><div class="episode-info"><div class="episode-title">Part ${safeText(part.part_number)}${part.title?' — '+safeText(part.title):''}</div><div class="episode-sub">${safeText(part.description||'')}</div></div>${watch?`<a class="episode-btn watch" href="${watch}" target="_blank" rel="noopener noreferrer">▶ WATCH</a>`:''}${down?`<a class="episode-btn" href="${down}" target="_blank" rel="noopener noreferrer">⬇ DOWNLOAD</a>`:''}</div>`}).join('');note.hidden=true;return rows;}catch(e){box.innerHTML='';note.hidden=true;console.error('Movie parts load:',e);return [];}
+}
+
+async function loadRecommended(currentId){
+ const box=document.getElementById('recommended'), note=document.getElementById('recommendedMsg');
+ try{
+  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const {data,error}=await db.from('movies').select('id,title,type,release_year,genre,poster_path,description,status').eq('status','published').order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  const current=window.__gavanaCurrentMovie||{};const pool=(data||[]).filter(x=>String(x.id)!==String(currentId));const related=pool.map(x=>({...x,_score:(x.genre&&current.genre&&x.genre.toLowerCase().split(/[,·|]/).some(g=>current.genre.toLowerCase().includes(g.trim()))?3:0)+(((String(x.type||'').toLowerCase()==='series')===(String(current.type||'').toLowerCase()==='series'))?1:0)})).sort((a,b)=>b._score-a._score).slice(0,45);for(let i=related.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[related[i],related[j]]=[related[j],related[i]];}const items=related.slice(0,30);
+  box.innerHTML=items.map(x=>`<div class="rec-card"><img loading="lazy" src="${safeText(x.poster_path||'')}" alt="" onerror="this.style.visibility='hidden'"><strong>${safeText(x.title||'Untitled')}</strong><small>${safeText(String(x.type||'movie').toLowerCase()==='series'?'Series':'Movie')} · ${safeText(String(x.release_year||''))}</small><a href="${String(x.type||'').toLowerCase()==="series"?'series-download.html':'movie-download.html'}?id=${encodeURIComponent(x.id)}">VIEW / DOWNLOAD</a></div>`).join('');
+  note.hidden=true;
+ }catch(e){note.hidden=true;console.error('Recommended load:',e);}
+}
+function safeText(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+const COMMENTS_TABLE='movie_comments';
+function commentSafe(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function loadComments(movieId){
+ const list=document.getElementById('commentList');
+ try{
+  const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const {data,error}=await db.from(COMMENTS_TABLE).select('name,comment,created_at').eq('movie_id',String(movieId)).order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  if(!data||!data.length){list.innerHTML='<p class="meta">No comments yet. Be the first to comment.</p>';return;}
+  list.innerHTML=data.map(c=>`<article class="comment-item"><strong>${commentSafe(c.name)}</strong><small>${new Date(c.created_at).toLocaleString()}</small><p>${commentSafe(c.comment)}</p></article>`).join('');
+ }catch(e){console.error('Comments load:',e);list.innerHTML='<p class="meta">Comments are temporarily unavailable.</p>';}
+}
+function setupComments(movieId){
+ const form=document.getElementById('commentForm');
+ if(!form)return;
+ loadComments(movieId);
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=document.getElementById('commentSubmit'),status=document.getElementById('commentStatus');
+  const name=document.getElementById('commentName').value.trim();
+  const email=document.getElementById('commentEmail').value.trim();
+  const comment=document.getElementById('commentText').value.trim();
+  if(!name||!email||!comment)return;
+  button.disabled=true;button.textContent='SENDING...';status.textContent='';
+  try{
+   const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+   const {data,error}=await db.from(COMMENTS_TABLE).insert({movie_id:String(movieId),name,email,comment}).select('id').single();
+   if(error)throw error;
+   let notified=false;
+   try{
+    const notice=await fetch('/.netlify/functions/comment-notification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movie_id:String(movieId),name,email,comment,title:document.getElementById('title')?.textContent||'GAVANA FILMS'})});
+    notified=notice.ok;
+   }catch(notificationError){console.warn('Email notification unavailable:',notificationError);}
+   form.reset();await loadComments(movieId);
+   status.textContent=notified?'Comment posted. Email notification sent.':'Comment posted. Email notification needs configuration by the site administrator.';
+  }catch(e){console.error('Comment submit:',e);status.textContent='Comment ntiyoherejwe. Ongera ugerageze.';}
+  finally{button.disabled=false;button.textContent='POST COMMENT';}
+ });
+}
+
+document.getElementById("share").addEventListener("click",async()=>{
+ try{
+  if(navigator.share)await navigator.share({title:document.title,url:location.href});
+  else if(navigator.clipboard){
+   await navigator.clipboard.writeText(location.href);
+   alert("Movie link copied!");
+  }else alert("Copy this page link: "+location.href);
+ }catch(e){}
+});
+init();
+</script>
+</body>
+</html>
