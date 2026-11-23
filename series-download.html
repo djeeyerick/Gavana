@@ -51,8 +51,8 @@ footer{text-align:center;color:#999;padding:25px}.episode-list{display:grid;gap:
 <p id="description"></p>
 <p id="msg" hidden></p>
 
-<a id="official" class="btn download-choice" href="#" target="_blank" rel="noopener noreferrer" hidden>⬇ OFFICIAL DOWNLOAD</a>
-<a id="watch" class="btn secondary" hidden>▶ WATCH SERIES</a>
+
+
 <div id="seriesEpisodesSection" hidden><h3>SEASONS & EPISODES</h3><div id="episodeList" class="episode-list"></div><p id="episodeMsg" class="meta" hidden></p></div>
 
 <h3>FILM INFO</h3>
@@ -91,12 +91,7 @@ function cleanUrl(value){
  try { const parsed=new URL(url); return (parsed.protocol==="https:"||parsed.protocol==="http:")?parsed.href:""; }
  catch(e){ return ""; }
 }
-function setOfficialButton(candidates){
- const a=document.getElementById('official');
- const url=cleanUrl(candidates.find(v=>cleanUrl(v))||'');
- a.dataset.downloadUrl=url;a.href=url||'#';a.hidden=!url;a.classList.toggle('no-link',!url);a.setAttribute('aria-disabled',url?'false':'true');
- a.onclick=function(e){const target=cleanUrl(this.dataset.downloadUrl||'');if(!target){e.preventDefault();alert('Download link ntiboneka ubu.');return;}this.href=target;};
-}
+
 function renderExtraInfo(data){
  const box=document.getElementById('extraInfo');if(!box)return;
  const fields=[['Genres',data.genres],['Release date',data.release_date],['Cast',data.cast||data.casts||data.actors],['Director / Creator',data.director],['TMDB rating',data.rating||data.vote_average],['Votes',data.vote_count],['Runtime',data.runtime],['Original language',data.original_language],['Production',data.production_companies],['Status',data.status],['Seasons',data.number_of_seasons],['Episodes',data.number_of_episodes]];
@@ -159,14 +154,7 @@ async function init(){
    const p=document.getElementById("poster");
    p.src=data.poster_path;p.hidden=false;
   }
-  setOfficialButton([data.download_url,data.official_download_url,data.download,data.officialDownloadUrl]);
-  document.getElementById("official").hidden=true;document.getElementById("watch").hidden=true;document.getElementById("seriesEpisodesSection").hidden=false;await loadSeriesEpisodes(data.id);
-  if(!isSeries && data.video_url){
-   const w=document.getElementById("watch");
-   w.href=cleanUrl(data.video_url)||("./watchpage.html?id="+encodeURIComponent(data.id));
-   w.target=cleanUrl(data.video_url)?"_blank":"_self";w.rel="noopener noreferrer";w.hidden=false;
-  }
-  const hasDownload = !!cleanUrl(data.download_url||data.official_download_url||data.download||data.officialDownloadUrl||'');
+document.getElementById("seriesEpisodesSection").hidden=false;await loadSeriesEpisodes(data.id);
   msg.hidden=true;
   await loadRecommended(String(data.id));
  }catch(e){
